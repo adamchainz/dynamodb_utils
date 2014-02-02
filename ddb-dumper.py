@@ -117,6 +117,7 @@ def dump(host, region, table_name, segment, total_segments, compress):
             for item in items:
                 output.write(json.dumps(item))
                 output.write("\n")
+            output.flush()
 
             queue.put(len(items))
             sleep(0.1)
