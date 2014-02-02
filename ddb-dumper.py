@@ -85,6 +85,8 @@ def main(host, region, table_name, total_segments, compress):
     pool.close()
     pool.join()
 
+    print "Done."
+
 
 def dump_init(_queue):
     multiprocessing.current_process().queue = _queue
