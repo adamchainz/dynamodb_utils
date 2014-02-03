@@ -97,7 +97,7 @@ def dump(host, region, table_name, segment, total_segments, compress):
     queue = multiprocessing.current_process().queue
     connection = Connection(host=host, region=region)
 
-    filename = ".".join([table_name, str(segment), str(total_segments), "dump"])
+    filename = ".".join([table_name, str(segment), "dump"])
     if compress:
         opener = gzip.GzipFile
         filename += ".gz"
