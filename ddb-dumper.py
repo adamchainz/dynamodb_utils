@@ -23,7 +23,7 @@ parser.add_argument(
     help="The region to connect to."
 )
 parser.add_argument(
-    '-s',
+    '-o',
     '--host',
     type=str,
     help="The host url to connect to (for use with DynamoDB Local)."
