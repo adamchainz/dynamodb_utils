@@ -1,4 +1,3 @@
-=========
 ddb-utils
 =========
 
@@ -14,4 +13,4 @@ and your test environment.
 
 Install with:
 
-    pip install ddb-utils
+    $ pip install ddb-utils
