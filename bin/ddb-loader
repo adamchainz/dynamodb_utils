@@ -40,6 +40,13 @@ parser.add_argument(
     help="The list of filenames of dump files created by ddb-dumper that you wish to load."
 )
 parser.add_argument(
+    '-p',
+    '--parallelism',
+    type=int,
+    default=None,
+    help="The number of processes to use (defaults to the number of processors you have)."
+)
+parser.add_argument(
     '--hash-key',
     type=str,
     default=None,
@@ -58,7 +65,7 @@ parser.add_argument(
 )
 
 
-def main(host, region, table_name, load_files, hash_key, range_key):
+def main(host, region, table_name, parallelism, load_files, hash_key, range_key):
     connection = Connection(host=host, region=region)
     desc = connection.describe_table(table_name)
 
@@ -87,10 +94,9 @@ def main(host, region, table_name, load_files, hash_key, range_key):
     desc = connection.describe_table(table_name)
 
     queue = multiprocessing.Queue()
-    pool = multiprocessing.Pool(
-        initializer=load_init,
-        initargs=(queue,)
-    )
+    pool = multiprocessing.Pool(num_processes=parallelism,
+                                initializer=load_init,
+                                initargs=(queue,))
     for filename in load_files:
         pool.apply_async(load_file, [host, region, table_name, filename])
 
