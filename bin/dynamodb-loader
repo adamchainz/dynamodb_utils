@@ -4,6 +4,7 @@ import argparse
 import gzip
 import json
 import multiprocessing
+import os
 import sys
 from time import sleep
 
@@ -69,6 +70,8 @@ def main(host, region, table_name, parallelism, load_files, hash_key, range_key)
     connection = Connection(host=host, region=region)
     desc = connection.describe_table(table_name)
 
+    check_files(load_files)
+
     if desc is None:
         print "Table does not exist - creating table '{}'...".format(table_name)
 
@@ -125,6 +128,17 @@ def main(host, region, table_name, parallelism, load_files, hash_key, range_key)
     pool.join()
 
     print "Done."
+
+
+def check_files(load_files):
+    if not len(load_files):
+        print "No files to load from."
+        raise SystemExit(1)
+
+    for load_file in load_files:
+        if not os.path.exists(load_file):
+            print "File {} does not exist.".format(load_file)
+            raise SystemExit(1)
 
 
 def parse_hash_key(hash_key):
