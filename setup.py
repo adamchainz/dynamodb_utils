@@ -15,7 +15,7 @@ setup(
     ],
     keywords='python dynamodb amazon aws',
     scripts=[
-        'bin/dynamodb_dumper',
-        'bin/dynamodb_loader',
+        'bin/dynamodb-dumper',
+        'bin/dynamodb-loader',
     ]
 )
