@@ -94,7 +94,7 @@ def main(host, region, table_name, parallelism, load_files, hash_key, range_key)
     desc = connection.describe_table(table_name)
 
     queue = multiprocessing.Queue()
-    pool = multiprocessing.Pool(num_processes=parallelism,
+    pool = multiprocessing.Pool(processes=parallelism,
                                 initializer=load_init,
                                 initargs=(queue,))
     for filename in load_files:
