@@ -8,7 +8,10 @@ import sys
 from time import sleep
 
 from pynamodb.connection import Connection
-from pynamodb.constants import ITEMS, LAST_EVALUATED_KEY
+from pynamodb.constants import (ITEMS, LAST_EVALUATED_KEY,
+                                PROVISIONED_THROUGHPUT, READ_CAPACITY_UNITS,
+                                TOTAL)
+from pynamodb.throttle import Throttle
 
 
 parser = argparse.ArgumentParser(
@@ -49,15 +52,27 @@ parser.add_argument(
     help="Whether output files should be compressed with gzip (default off)."
 )
 parser.add_argument(
+    '--capacity-consumption',
+    type=float,
+    default=0.5,
+    help="The amount (between 0.01 and 1.0) of the total read capacity of the table to consume (default 0.5)."
+)
+parser.add_argument(
     'table_name',
     type=str,
     help="The name of the table to dump."
 )
 
 
-def main(host, region, table_name, total_segments, compress, parallelism):
+def main(host, region, table_name, total_segments, compress, parallelism, capacity_consumption):
     if not total_segments:
         total_segments = multiprocessing.cpu_count()
+
+    if parallelism is None:
+        parallelism = multiprocessing.cpu_count()
+
+    capacity_consumption = max(0.01, capacity_consumption)
+    capacity_consumption = min(1.0, capacity_consumption)
 
     connection = Connection(host=host, region=region)
     desc = connection.describe_table(table_name)
@@ -65,10 +80,17 @@ def main(host, region, table_name, total_segments, compress, parallelism):
         raise NameError("Table does not exist.")
     total_items = desc['ItemCount']
 
+    total_capacity = desc[PROVISIONED_THROUGHPUT][READ_CAPACITY_UNITS]
+    capacity_per_process = max(
+        1.0,
+        (capacity_consumption * total_capacity) / float(parallelism)
+    )
+
     queue = multiprocessing.Queue()
+    print capacity_per_process
     pool = multiprocessing.Pool(processes=parallelism,
                                 initializer=dump_init,
-                                initargs=(queue,))
+                                initargs=(queue, capacity_per_process))
     for x in xrange(total_segments):
         pool.apply_async(dump, [host, region, table_name, x, total_segments, compress])
 
@@ -99,12 +121,16 @@ def main(host, region, table_name, total_segments, compress, parallelism):
     print "Done."
 
 
-def dump_init(_queue):
-    multiprocessing.current_process().queue = _queue
+def dump_init(_queue, _capacity):
+    proc = multiprocessing.current_process()
+    proc.queue = _queue
+    proc.capacity = _capacity
 
 
 def dump(host, region, table_name, segment, total_segments, compress):
-    queue = multiprocessing.current_process().queue
+    proc = multiprocessing.current_process()
+    queue = proc.queue
+    capacity = proc.capacity
     connection = Connection(host=host, region=region)
 
     filename = ".".join([table_name, str(segment), "dump"])
@@ -113,6 +139,8 @@ def dump(host, region, table_name, segment, total_segments, compress):
         filename += ".gz"
     else:
         opener = open
+
+    throttle = Throttle(capacity)
 
     with opener(filename, 'w') as output:
         data = None
@@ -123,8 +151,11 @@ def dump(host, region, table_name, segment, total_segments, compress):
                 segment=segment,
                 limit=100,
                 total_segments=total_segments,
-                exclusive_start_key=last_evaluated_key
+                exclusive_start_key=last_evaluated_key,
+                return_consumed_capacity=TOTAL
             )
+            capacity = data.get('ConsumedCapacity', {}).get('CapacityUnits', 0)
+            throttle.add_record(capacity)
             items = data.get(ITEMS)
 
             for item in items:
