@@ -87,7 +87,6 @@ def main(host, region, table_name, total_segments, compress, parallelism, capaci
     )
 
     queue = multiprocessing.Queue()
-    print capacity_per_process
     pool = multiprocessing.Pool(processes=parallelism,
                                 initializer=dump_init,
                                 initargs=(queue, capacity_per_process))
