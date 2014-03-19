@@ -14,6 +14,8 @@ from pynamodb.constants import (ITEMS, LAST_EVALUATED_KEY,
 from pynamodb.throttle import Throttle
 
 
+CPU_COUNT = multiprocessing.cpu_count()
+
 parser = argparse.ArgumentParser(
     prog="ddb-dumper",
     description="""DynamoDB Dumper: backup tables out of DynamoDB with ease."""
@@ -35,14 +37,14 @@ parser.add_argument(
     '-s',
     '--total-segments',
     type=int,
-    default=None,
+    default=CPU_COUNT,
     help="The number of segments to scan in parallel (defaults to the number of processors you have)."
 )
 parser.add_argument(
     '-p',
     '--parallelism',
     type=int,
-    default=None,
+    default=CPU_COUNT,
     help="The number of processes to use (defaults to the number of processors you have)."
 )
 parser.add_argument(
@@ -65,12 +67,6 @@ parser.add_argument(
 
 
 def main(host, region, table_name, total_segments, compress, parallelism, capacity_consumption):
-    if not total_segments:
-        total_segments = multiprocessing.cpu_count()
-
-    if parallelism is None:
-        parallelism = multiprocessing.cpu_count()
-
     capacity_consumption = max(0.01, capacity_consumption)
     capacity_consumption = min(1.0, capacity_consumption)
 

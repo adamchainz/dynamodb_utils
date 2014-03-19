@@ -15,6 +15,9 @@ from pynamodb.models import Model
 from pynamodb.attributes import NumberAttribute, UnicodeAttribute
 
 
+CPU_COUNT = multiprocessing.cpu_count()
+
+
 parser = argparse.ArgumentParser(
     prog="ddb-loader",
     description="""DynamoDB Loader: restore tables dumped by ddb-dumper with ease."""
@@ -44,7 +47,7 @@ parser.add_argument(
     '-p',
     '--parallelism',
     type=int,
-    default=None,
+    default=CPU_COUNT,
     help="The number of processes to use (defaults to the number of processors you have)."
 )
 parser.add_argument(
