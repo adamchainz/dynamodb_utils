@@ -152,23 +152,11 @@ def dump(segment, total_segments):
     else:
         opener = open
 
-    throttle = Throttle(capacity)
+    dumper = BatchDumper(connection, table_name, capacity, segment, total_segments)
 
     with opener(filename, 'w') as output:
-        data = None
-        last_evaluated_key = None
-        while data is None or last_evaluated_key:
-            data = connection.scan(
-                table_name=table_name,
-                segment=segment,
-                limit=100,
-                total_segments=total_segments,
-                exclusive_start_key=last_evaluated_key,
-                return_consumed_capacity=TOTAL
-            )
-            capacity = data.get('ConsumedCapacity', {}).get('CapacityUnits', 0)
-            throttle.add_record(capacity)
-            items = data.get(ITEMS)
+        while dumper.has_items:
+            items = dumper.get_items()
 
             for item in items:
                 output.write(json.dumps(item))
@@ -176,10 +164,37 @@ def dump(segment, total_segments):
             output.flush()
 
             queue.put(len(items))
-            sleep(0.1)  # Replace with throttling
-            last_evaluated_key = data.get(LAST_EVALUATED_KEY)
 
     queue.put('complete')
+
+
+class BatchDumper(object):
+    def __init__(self, connection, table_name, capacity, segment, total_segments):
+        self.connection = connection
+        self.table_name = table_name
+        self.throttle = Throttle(capacity)
+        self.segment = segment
+        self.total_segments = total_segments
+        self.has_items = True
+        self.last_evaluated_key = None
+
+    def get_items(self):
+        data = self.connection.scan(
+            table_name=self.table_name,
+            segment=self.segment,
+            limit=100,
+            total_segments=self.total_segments,
+            exclusive_start_key=self.last_evaluated_key,
+            return_consumed_capacity=TOTAL
+        )
+
+        capacity = data.get('ConsumedCapacity', {}).get('CapacityUnits', 0)
+        self.throttle.add_record(capacity)
+
+        self.last_evaluated_key = data.get(LAST_EVALUATED_KEY)
+        self.has_items = (self.last_evaluated_key is not None)
+
+        return data.get(ITEMS)
 
 
 if __name__ == '__main__':
