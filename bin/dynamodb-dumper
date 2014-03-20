@@ -41,6 +41,14 @@ parser.add_argument(
     help="The number of segments to scan in parallel (defaults to the number of processors you have)."
 )
 parser.add_argument(
+    '-k',
+    '--hash-keys',
+    type=unicode,
+    nargs='+',
+    default=[],
+    help="The list of hash keys to dump data for (defaults to all - by setting this, 'Query' will be used as opposed to 'Scan' with parallel segments - thus --total-segments will be overridden)."
+)
+parser.add_argument(
     '-p',
     '--parallelism',
     type=int,
@@ -66,7 +74,7 @@ parser.add_argument(
 )
 
 
-def main(host, region, table_name, total_segments, compress, parallelism, capacity_consumption):
+def main(host, region, table_name, total_segments, hash_keys, compress, parallelism, capacity_consumption):
     capacity_consumption = max(0.01, capacity_consumption)
     capacity_consumption = min(1.0, capacity_consumption)
 
@@ -89,31 +97,37 @@ def main(host, region, table_name, total_segments, compress, parallelism, capaci
         initializer=dump_init,
         initargs=[queue, capacity_per_process, host, region, compress, table_name]
     )
-    for segment in xrange(total_segments):
-        pool.apply_async(
-            dump,
-            [segment, total_segments]
-        )
 
-    segments_complete = 0
+    # Keys or segments?
+    if len(hash_keys):
+        for key in hash_keys:
+            pool.apply_async(dump, [key])
+        num_to_do = len(hash_keys)
+    else:
+        for segment in xrange(total_segments):
+            pool.apply_async(dump, [segment, total_segments])
+        num_to_do = total_segments
+
+    num_complete = 0
     items_dumped = 0
     while True:
         sleep(1)
         while not queue.empty():
             update = queue.get()
             if update == 'complete':
-                segments_complete += 1
+                num_complete += 1
             else:
                 items_dumped += update
 
-        print "{}/~{} items dumped - {}/{} segments.".format(
+        print "{}/~{} items dumped - {}/{} {}.".format(
             items_dumped,
             total_items,
-            segments_complete,
-            total_segments,
+            num_complete,
+            num_to_do,
+            "keys" if len(hash_keys) else "segments"
         )
 
-        if segments_complete == total_segments:
+        if num_complete == num_to_do:
             break
 
     pool.close()
@@ -141,18 +155,22 @@ def dump_init(_queue, _capacity, _host, _region, _compress, _table_name):
     table_name = _table_name
 
 
-def dump(segment, total_segments):
+def dump(part, total_segments=None):
+    """
+    'part' may be the hash_key if we are dumping just a few hash_keys - else
+    it will be the segment number
+    """
     global host, queue, capacity, host, region, compress, table_name
     connection = Connection(host=host, region=region)
 
-    filename = ".".join([table_name, str(segment), "dump"])
+    filename = ".".join([table_name, str(part), "dump"])
     if compress:
         opener = gzip.GzipFile
         filename += ".gz"
     else:
         opener = open
 
-    dumper = BatchDumper(connection, table_name, capacity, segment, total_segments)
+    dumper = BatchDumper(connection, table_name, capacity, part, total_segments)
 
     with opener(filename, 'w') as output:
         while dumper.has_items:
@@ -169,24 +187,17 @@ def dump(segment, total_segments):
 
 
 class BatchDumper(object):
-    def __init__(self, connection, table_name, capacity, segment, total_segments):
+    def __init__(self, connection, table_name, capacity, part, total_segments):
         self.connection = connection
         self.table_name = table_name
         self.throttle = Throttle(capacity)
-        self.segment = segment
+        self.part = part
         self.total_segments = total_segments
         self.has_items = True
         self.last_evaluated_key = None
 
     def get_items(self):
-        data = self.connection.scan(
-            table_name=self.table_name,
-            segment=self.segment,
-            limit=100,
-            total_segments=self.total_segments,
-            exclusive_start_key=self.last_evaluated_key,
-            return_consumed_capacity=TOTAL
-        )
+        data = self.get_data()
 
         capacity = data.get('ConsumedCapacity', {}).get('CapacityUnits', 0)
         self.throttle.add_record(capacity)
@@ -196,6 +207,23 @@ class BatchDumper(object):
 
         return data.get(ITEMS)
 
+    def get_data(self):
+        if self.total_segments is not None:
+            return self.connection.scan(
+                table_name=self.table_name,
+                segment=self.part,
+                total_segments=self.total_segments,
+                exclusive_start_key=self.last_evaluated_key,
+                return_consumed_capacity=TOTAL,
+                limit=100,
+            )
+        else:
+            return self.connection.query(
+                table_name=self.table_name,
+                hash_key=self.part,
+                exclusive_start_key=self.last_evaluated_key,
+                limit=100
+            )
 
 if __name__ == '__main__':
     kwargs = dict(parser.parse_args(sys.argv[1:])._get_kwargs())
