@@ -84,11 +84,16 @@ def main(host, region, table_name, total_segments, compress, parallelism, capaci
     )
 
     queue = multiprocessing.Queue()
-    pool = multiprocessing.Pool(processes=parallelism,
-                                initializer=dump_init,
-                                initargs=(queue, capacity_per_process))
-    for x in xrange(total_segments):
-        pool.apply_async(dump, [host, region, table_name, x, total_segments, compress])
+    pool = multiprocessing.Pool(
+        processes=parallelism,
+        initializer=dump_init,
+        initargs=[queue, capacity_per_process, host, region, compress, table_name]
+    )
+    for segment in xrange(total_segments):
+        pool.apply_async(
+            dump,
+            [segment, total_segments]
+        )
 
     segments_complete = 0
     items_dumped = 0
@@ -117,16 +122,27 @@ def main(host, region, table_name, total_segments, compress, parallelism, capaci
     print "Done."
 
 
-def dump_init(_queue, _capacity):
-    proc = multiprocessing.current_process()
-    proc.queue = _queue
-    proc.capacity = _capacity
+host = None
+queue = None
+capacity = None
+host = None
+region = None
+compress = None
+table_name = None
 
 
-def dump(host, region, table_name, segment, total_segments, compress):
-    proc = multiprocessing.current_process()
-    queue = proc.queue
-    capacity = proc.capacity
+def dump_init(_queue, _capacity, _host, _region, _compress, _table_name):
+    global host, queue, capacity, host, region, compress, table_name
+    queue = _queue
+    capacity = _capacity
+    host = _host
+    region = _region
+    compress = _compress
+    table_name = _table_name
+
+
+def dump(segment, total_segments):
+    global host, queue, capacity, host, region, compress, table_name
     connection = Connection(host=host, region=region)
 
     filename = ".".join([table_name, str(segment), "dump"])

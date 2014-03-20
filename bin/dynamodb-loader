@@ -70,11 +70,13 @@ def main(host, region, table_name, parallelism, load_files):
     desc = connection.describe_table(table_name)
 
     queue = multiprocessing.Queue()
-    pool = multiprocessing.Pool(processes=parallelism,
-                                initializer=load_init,
-                                initargs=(queue,))
+    pool = multiprocessing.Pool(
+        processes=parallelism,
+        initializer=load_init,
+        initargs=[queue, host, region, table_name]
+    )
     for filename in load_files:
-        pool.apply_async(load_file, [host, region, table_name, filename])
+        pool.apply_async(load_file, [filename])
 
     files_completed = 0
     items_loaded = 0
@@ -118,9 +120,37 @@ def check_files(load_files):
             raise SystemExit(1)
 
 
-def load_init(queue):
-    proc = multiprocessing.current_process()
-    proc.queue = queue
+host = None
+queue = None
+region = None
+table_name = None
+
+
+def load_init(_queue, _host, _region, _table_name):
+    global queue, host, region, table_name
+    queue = _queue
+    host = _host
+    region = _region
+    table_name = _table_name
+
+
+def load_file(filename):
+    global queue, host, region, table_name
+    connection = Connection(host=host, region=region)
+
+    if filename.endswith('.gz'):
+        opener = gzip.GzipFile
+    else:
+        opener = open
+
+    with opener(filename, 'r') as infile:
+        with BatchPutManager(connection, table_name) as batch:
+            for line in infile:
+                item = json.loads(line)
+                batch.put(item)
+                queue.put(1)
+
+    queue.put('complete')
 
 
 class BatchPutManager(object):
@@ -158,27 +188,6 @@ class BatchPutManager(object):
             unprocessed_keys = data.get(UNPROCESSED_KEYS, {}).get(self.table_name)
 
         self.items = []
-
-
-def load_file(host, region, table_name, filename):
-    proc = multiprocessing.current_process()
-    queue = proc.queue
-
-    connection = Connection(host=host, region=region)
-
-    if filename.endswith('.gz'):
-        opener = gzip.GzipFile
-    else:
-        opener = open
-
-    with opener(filename, 'r') as infile:
-        with BatchPutManager(connection, table_name) as batch:
-            for line in infile:
-                item = json.loads(line)
-                batch.put(item)
-                queue.put(1)
-
-    queue.put('complete')
 
 
 if __name__ == '__main__':
