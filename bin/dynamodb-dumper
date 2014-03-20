@@ -73,7 +73,8 @@ def main(host, region, table_name, total_segments, compress, parallelism, capaci
     connection = Connection(host=host, region=region)
     desc = connection.describe_table(table_name)
     if desc is None:
-        raise NameError("Table does not exist.")
+        sys.stderr.writelines(["Table does not exist."])
+        sys.exit(-1)
     total_items = desc['ItemCount']
 
     total_capacity = desc[PROVISIONED_THROUGHPUT][READ_CAPACITY_UNITS]
