@@ -17,8 +17,8 @@ CPU_COUNT = multiprocessing.cpu_count()
 
 
 parser = argparse.ArgumentParser(
-    prog="ddb-loader",
-    description="""DynamoDB Loader: restore tables dumped by ddb-dumper with ease."""
+    prog="dynamodb-loader",
+    description="""DynamoDB Loader: restore tables dumped by dynamodb-dumper with ease."""
 )
 parser.add_argument(
     '-r',

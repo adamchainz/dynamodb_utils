@@ -17,7 +17,7 @@ from pynamodb.throttle import Throttle
 CPU_COUNT = multiprocessing.cpu_count()
 
 parser = argparse.ArgumentParser(
-    prog="ddb-dumper",
+    prog="dynamodb-dumper",
     description="""DynamoDB Dumper: backup tables out of DynamoDB with ease."""
 )
 parser.add_argument(
