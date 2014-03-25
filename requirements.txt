@@ -1,1 +1,3 @@
 pynamodb
+nose==1.3.0
+tox==1.7.0

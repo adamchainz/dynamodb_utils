@@ -1,12 +1,12 @@
 import os
 import subprocess
 
-from base import DynamoDBLocalTestCase
+from .base import DynamoDBLocalTestCase
 
 from pynamodb.types import HASH, STRING
 
 
-DIR_ABOVE = os.path.join(os.path.abspath(os.path.dirname(__file__) + '/..'))
+THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 class DynamoDBLoaderTests(DynamoDBLocalTestCase):
@@ -29,14 +29,14 @@ class DynamoDBLoaderTests(DynamoDBLocalTestCase):
             self.assertEqual(len(items), 0)
 
             # Run dynamodb-loader to load some items
-            os.chdir(DIR_ABOVE)
+            os.chdir(THIS_DIR)
             subprocess.check_output(
-                ['./bin/dynamodb-loader',
+                ['../bin/dynamodb-loader',
                  table_name,
                  '--host', self.DDB_LOCAL_HOST,
                  '--region', self.DDB_LOCAL_REGION,
                  '--parallelism', '1',
-                 '--load', 'tests/loader-test-simple.dump'],
+                 '--load', 'loader-test-simple.dump'],
             )
 
             # Check they are loaded
@@ -44,6 +44,6 @@ class DynamoDBLoaderTests(DynamoDBLocalTestCase):
             self.assertEqual(len(items), 1)
 
             self.assertDictEqual(items[0], {
-                'object_id': {'S': 'object_id_1'},
+                'object_id': {'S': 'DEADBEEF'},
                 'foo': {'N': '802'}
             })

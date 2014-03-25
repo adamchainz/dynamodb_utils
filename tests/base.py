@@ -1,3 +1,4 @@
+from __future__ import print_function
 from unittest import TestCase
 import random
 
@@ -23,7 +24,7 @@ class DynamoDBLocalTestCase(TestCase):
         try:
             cls.connection.list_tables()
         except (TableError, ConnectionError) as e:
-            print e
+            print(e)
             raise EnvironmentError("DynamoDB Local does not appear to be running on localhost, port {}! Cannot run tests!")
 
     def transient_table(self, **kwargs):

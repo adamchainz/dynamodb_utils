@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
+from __future__ import print_function
+
 import argparse
 import gzip
 import json
@@ -89,11 +91,11 @@ def main(host, region, table_name, parallelism, load_files):
             else:
                 items_loaded += update
 
-        print "{} items loaded - {}/{} files complete.".format(
+        print("{} items loaded - {}/{} files complete.".format(
             items_loaded,
             files_completed,
             len(load_files)
-        )
+        ))
         sys.stdout.flush()
 
         if files_completed == len(load_files):
@@ -102,7 +104,7 @@ def main(host, region, table_name, parallelism, load_files):
     pool.close()
     pool.join()
 
-    print "Done."
+    print("Done.")
 
 
 def check_files(load_files):
