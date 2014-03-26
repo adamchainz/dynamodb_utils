@@ -28,9 +28,16 @@ class DynamoDBLoaderTests(DynamoDBLocalTestCase):
 
             # Check they are loaded
             items = self.connection.scan(table_name=table_name)['Items']
-            self.assertEqual(len(items), 1)
+            self.assertEqual(len(items), 2)
+
+            items.sort(key=lambda i: i['object_id']['S'])
 
             self.assertDictEqual(items[0], {
+                'object_id': {'S': 'DEADBABE'},
+                'foo': {'N': '424'}
+            })
+
+            self.assertDictEqual(items[1], {
                 'object_id': {'S': 'DEADBEEF'},
                 'foo': {'N': '802'}
             })
