@@ -4,27 +4,13 @@ import subprocess
 
 from .base import DynamoDBLocalTestCase
 
-from pynamodb.types import HASH, STRING
-
-
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 class DynamoDBDumperTests(DynamoDBLocalTestCase):
 
     def test_load_simple(self):
-        table_creation_kwargs = dict(
-            attribute_definitions=[{
-                'attribute_type': STRING,
-                'attribute_name': 'object_id'
-            }],
-            key_schema=[{
-                'key_type': HASH,
-                'attribute_name': 'object_id'
-            }]
-        )
-
-        with self.transient_table(**table_creation_kwargs) as table_name:
+        with self.transient_table(**self.simple_table) as table_name:
             # Create item to dump
             self.connection.put_item(
                 table_name=table_name,
@@ -59,5 +45,7 @@ class DynamoDBDumperTests(DynamoDBLocalTestCase):
 
             self.assertEqual(len(lines), 1)
             item = json.loads(lines[0])
-            self.assertDictEqual(item['object_id'], {'S': 'DEADBEEF'})
-            self.assertDictEqual(item['foo'], {'N': '802'})
+            self.assertDictEqual(
+                item,
+                {"object_id": {"S": "DEADBEEF"}, "foo": {"N": "802"}}
+            )

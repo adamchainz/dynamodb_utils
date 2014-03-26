@@ -5,6 +5,7 @@ import random
 from botocore.vendored.requests import ConnectionError
 from pynamodb.connection import Connection
 from pynamodb.exceptions import TableError
+from pynamodb.types import HASH, STRING
 
 
 class DynamoDBLocalTestCase(TestCase):
@@ -29,6 +30,17 @@ class DynamoDBLocalTestCase(TestCase):
 
     def transient_table(self, **kwargs):
         return TransientLocalTable(self.connection, **kwargs)
+
+    simple_table = dict(
+        attribute_definitions=[{
+            'attribute_type': STRING,
+            'attribute_name': 'object_id'
+        }],
+        key_schema=[{
+            'key_type': HASH,
+            'attribute_name': 'object_id'
+        }]
+    )
 
 
 class TransientLocalTable(object):
