@@ -1,0 +1,19 @@
+{
+	"folders":
+	[
+		{
+			"path": "/Users/chainz/Documents/Projects/dynamodb_utils",
+            "folder_exclude_patterns":
+            [
+                "*.tox",
+                "*.egg-info",
+                "build",
+                "dist"
+            ],
+            "file_exclude_patterns":
+            [
+                "*.sublime-workspace"
+            ]
+		}
+	]
+}
