@@ -2,7 +2,7 @@ dynamodb_utils
 ==============
 
 A toolchain for Amazon's `DynamoDB <http://aws.amazon.com/dynamodb/>`_ to make
-common operations easier. Currently contains:
+common operations (backup, restore backups) easier. Currently contains:
 
 * ``dynamodb-dumper`` - backup tables out of DynamoDB with ease.
 * ``dynamodb-loader`` - restore tables dumped by ``dynamodb-dumper`` with ease.

@@ -7,7 +7,7 @@ setup(
     author='Adam Johnson',
     author_email='me@adamj.eu',
     url='https://github.com/adamchainz/dynamodb_utils',
-    description='A toolchain for AWS DynamoDB to make common operations easier.',
+    description='A toolchain for AWS DynamoDB to make common operations (backup, restore backups) easier.',
     long_description=open('README.rst').read(),
     license='GPLv3',
     install_requires=[
