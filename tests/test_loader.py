@@ -32,12 +32,12 @@ class DynamoDBLoaderTests(DynamoDBLocalTestCase):
 
             items.sort(key=lambda i: i['object_id']['S'])
 
-            self.assertDictEqual(items[0], {
+            self.assertEqual(items[0], {
                 'object_id': {'S': 'DEADBABE'},
                 'foo': {'N': '424'}
             })
 
-            self.assertDictEqual(items[1], {
+            self.assertEqual(items[1], {
                 'object_id': {'S': 'DEADBEEF'},
                 'foo': {'N': '802'}
             })

@@ -52,11 +52,11 @@ class DynamoDBDumperTests(DynamoDBLocalTestCase):
             items = [json.loads(line) for line in lines]
             items.sort(key=lambda i: i['object_id']['S'])
 
-            self.assertDictEqual(
+            self.assertEqual(
                 items[0],
                 {"object_id": {"S": "DEADBABE"}, "foo": {"N": "424"}}
             )
-            self.assertDictEqual(
+            self.assertEqual(
                 items[1],
                 {"object_id": {"S": "DEADBEEF"}, "foo": {"N": "802"}}
             )
@@ -101,7 +101,7 @@ class DynamoDBDumperTests(DynamoDBLocalTestCase):
 
             self.assertEqual(len(lines), 1)
             item = json.loads(lines[0])
-            self.assertDictEqual(
+            self.assertEqual(
                 item,
                 {"object_id": {"S": "DEADBABE"}, "foo": {"N": "424"}}
             )
