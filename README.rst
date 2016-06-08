@@ -41,5 +41,5 @@ The tools are based upon `PynamoDB <https://github.com/jlafon/PynamoDB/>`_,
 which is based upon `botocore <https://github.com/boto/botocore>`_. Therefore,
 credentials will be read from one of many places - IAM Role, environment
 variables, or a 'boto file'. See the `boto documentation
-<http://boto.readthedocs.org/en/latest/boto_config_tut.html#credentials>`_ for
+<https://boto.readthedocs.io/en/latest/boto_config_tut.html#credentials>`_ for
 more details.
