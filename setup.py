@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='dynamodb_utils',
-    version='0.4.2',
+    version='1.0.0',
     author='Adam Johnson',
     author_email='me@adamj.eu',
     url='https://github.com/adamchainz/dynamodb_utils',
