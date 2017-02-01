@@ -1,7 +1,9 @@
+import sys
 import os
-import subprocess
 
 from .base import DynamoDBLocalTestCase
+from dynamodb_utils import cli
+from mock import patch
 
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -17,14 +19,15 @@ class DynamoDBLoaderTests(DynamoDBLocalTestCase):
 
             # Run dynamodb-loader to load some items
             os.chdir(THIS_DIR)
-            subprocess.check_output(
-                ['../bin/dynamodb-loader',
-                 table_name,
-                 '--host', self.DDB_LOCAL_HOST,
-                 '--region', self.DDB_LOCAL_REGION,
-                 '--parallelism', '1',
-                 '--load', 'loader-test-simple.dump'],
-            )
+            args = ['dynamodb-loader',
+                    table_name,
+                    '--host', self.DDB_LOCAL_HOST,
+                    '--region', self.DDB_LOCAL_REGION,
+                    '--parallelism', '1',
+                    '--load', 'loader-test-simple.dump',
+            ]
+            with patch.object(sys, 'argv', args):
+                cli.load()
 
             # Check they are loaded
             items = self.connection.scan(table_name=table_name)['Items']
@@ -33,7 +36,7 @@ class DynamoDBLoaderTests(DynamoDBLocalTestCase):
             items.sort(key=lambda i: i['object_id']['S'])
 
             self.assertEqual(items[0], {
-                'object_id': {'S': 'DEADBABE'},
+                'object_id': {'S': 'CAFEBABE'},
                 'foo': {'N': '424'}
             })
 

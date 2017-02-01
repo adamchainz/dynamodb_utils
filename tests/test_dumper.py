@@ -1,8 +1,10 @@
 import json
+import sys
 import os
-import subprocess
 
 from .base import DynamoDBLocalTestCase
+from dynamodb_utils import cli
+from mock import patch
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -14,7 +16,7 @@ class DynamoDBDumperTests(DynamoDBLocalTestCase):
             # Create items to dump
             self.connection.put_item(
                 table_name=table_name,
-                hash_key='DEADBABE',
+                hash_key='CAFEBABE',
                 attributes={'foo': {'N': '424'}}
             )
             self.connection.put_item(
@@ -30,13 +32,14 @@ class DynamoDBDumperTests(DynamoDBLocalTestCase):
 
             # Run dynamodb-dumper
             os.chdir(THIS_DIR)
-            subprocess.check_output(
-                ['../bin/dynamodb-dumper',
-                 table_name,
-                 '--host', self.DDB_LOCAL_HOST,
-                 '--region', self.DDB_LOCAL_REGION,
-                 '--total-segments', '1'],
-            )
+            args = ['dynamodb-dumper',
+                    table_name,
+                    '--host', self.DDB_LOCAL_HOST,
+                    '--region', self.DDB_LOCAL_REGION,
+                    '--total-segments', '1',
+            ]
+            with patch.object(sys, 'argv', args):
+                cli.dump() 
 
             # Check a .dump file was created
             dump_name = [name for name in os.listdir(THIS_DIR)
@@ -54,7 +57,7 @@ class DynamoDBDumperTests(DynamoDBLocalTestCase):
 
             self.assertEqual(
                 items[0],
-                {"object_id": {"S": "DEADBABE"}, "foo": {"N": "424"}}
+                {"object_id": {"S": "CAFEBABE"}, "foo": {"N": "424"}}
             )
             self.assertEqual(
                 items[1],
@@ -66,7 +69,7 @@ class DynamoDBDumperTests(DynamoDBLocalTestCase):
             # Create items
             self.connection.put_item(
                 table_name=table_name,
-                hash_key='DEADBABE',
+                hash_key='CAFEBABE',
                 attributes={'foo': {'N': '424'}}
             )
             self.connection.put_item(
@@ -80,14 +83,15 @@ class DynamoDBDumperTests(DynamoDBLocalTestCase):
 
             # Run dynamodb-dumper
             os.chdir(THIS_DIR)
-            subprocess.check_output(
-                ['../bin/dynamodb-dumper',
-                 table_name,
-                 '--host', self.DDB_LOCAL_HOST,
-                 '--region', self.DDB_LOCAL_REGION,
-                 '--total-segments', '1',
-                 '--hash-keys', 'DEADBABE'],
-            )
+            args = ['dynamodb-dumper',
+                    table_name,
+                    '--host', self.DDB_LOCAL_HOST,
+                    '--region', self.DDB_LOCAL_REGION,
+                    '--total-segments', '1',
+                    '--hash-keys', 'CAFEBABE',
+            ]
+            with patch.object(sys, 'argv', args):
+                cli.dump() 
 
             # Check a .dump file was created
             dump_name = [name for name in os.listdir(THIS_DIR)
@@ -103,5 +107,5 @@ class DynamoDBDumperTests(DynamoDBLocalTestCase):
             item = json.loads(lines[0])
             self.assertEqual(
                 item,
-                {"object_id": {"S": "DEADBABE"}, "foo": {"N": "424"}}
+                {"object_id": {"S": "CAFEBABE"}, "foo": {"N": "424"}}
             )

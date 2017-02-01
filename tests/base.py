@@ -26,7 +26,7 @@ class DynamoDBLocalTestCase(TestCase):
             cls.connection.list_tables()
         except (TableError, ConnectionError) as e:
             print(e)
-            raise EnvironmentError("DynamoDB Local does not appear to be running on localhost, port {}! Cannot run tests!")
+            raise EnvironmentError("DynamoDB Local does not appear to be running at {}! Cannot run tests!".format(cls.DDB_LOCAL_HOST))
 
     def transient_table(self, **kwargs):
         return TransientLocalTable(self.connection, **kwargs)

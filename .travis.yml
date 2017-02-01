@@ -1,0 +1,26 @@
+sudo: false
+language: python
+env:
+  global:
+    - AWS_REGION=localhost
+    - AWS_ACCESS_KEY_ID=XXXXXXXXXXXXXXXXXXXX
+    - AWS_SECRET_ACCESS_KEY=YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
+cache:
+  pip:
+  directories:
+    - dynamodb
+addons:
+  apt:
+    packages:
+      - oracle-java8-set-default
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
+install:
+  - pip install .
+  - pip install -r requirements.txt
+  - curl -s https://s3-us-west-2.amazonaws.com/dynamodb-local/dynamodb_local_latest.tar.gz | tar -zxvC dynamodb
+  - java -Xms256m -Xmx256m -jar dynamodb/DynamoDBLocal.jar -inMemory -delayTransientStatuses -port 3232 & sleep 5
+script: nosetests
+after_script: killall -9 java
