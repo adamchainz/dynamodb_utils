@@ -19,12 +19,13 @@ class DynamoDBLoaderTests(DynamoDBLocalTestCase):
 
             # Run dynamodb-loader to load some items
             os.chdir(THIS_DIR)
-            args = ['dynamodb-loader',
-                    table_name,
-                    '--host', self.DDB_LOCAL_HOST,
-                    '--region', self.DDB_LOCAL_REGION,
-                    '--parallelism', '1',
-                    '--load', 'loader-test-simple.dump',
+            args = [
+                'dynamodb-loader',
+                table_name,
+                '--host', self.DDB_LOCAL_HOST,
+                '--region', self.DDB_LOCAL_REGION,
+                '--parallelism', '1',
+                '--load', 'loader-test-simple.dump',
             ]
             with patch.object(sys, 'argv', args):
                 cli.load()

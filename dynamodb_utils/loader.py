@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import argparse
 import gzip
 import json
 import multiprocessing
@@ -16,13 +15,16 @@ from .batch import BatchPutManager
 
 config = dict()
 
-def load_table(host, region, table_name, parallelism=1, load_files=[]):
+
+def load_table(host, region, table_name, parallelism=1, load_files=None):
+    if load_files is None:
+        load_files = []
     connection = Connection(host=host, region=region)
     desc = connection.describe_table(table_name)
 
     if desc is None:
         sys.stderr.writelines([
-            "Table does not exist - please create first (you can use the official AWS CLI tool to do this automatically).\n"
+            "Table does not exist - please create first (you can use the official AWS CLI tool to do this).\n"
         ])
         sys.exit(-1)
 

@@ -1,7 +1,7 @@
 from pynamodb.constants import (ITEMS, TOTAL, UNPROCESSED_KEYS, LAST_EVALUATED_KEY,
-                                PROVISIONED_THROUGHPUT, READ_CAPACITY_UNITS,
                                 PUT_REQUEST, BATCH_WRITE_PAGE_LIMIT)
 from pynamodb.throttle import Throttle
+
 
 class BatchDumper(object):
     def __init__(self, connection, table_name, capacity, part, total_segments):
@@ -42,6 +42,7 @@ class BatchDumper(object):
                 limit=100
             )
 
+
 class BatchPutManager(object):
     def __init__(self, connection, table_name):
         self.connection = connection
@@ -77,5 +78,3 @@ class BatchPutManager(object):
             unprocessed_keys = data.get(UNPROCESSED_KEYS, {}).get(self.table_name)
 
         self.items = []
-
-

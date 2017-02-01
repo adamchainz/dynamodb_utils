@@ -32,14 +32,15 @@ class DynamoDBDumperTests(DynamoDBLocalTestCase):
 
             # Run dynamodb-dumper
             os.chdir(THIS_DIR)
-            args = ['dynamodb-dumper',
-                    table_name,
-                    '--host', self.DDB_LOCAL_HOST,
-                    '--region', self.DDB_LOCAL_REGION,
-                    '--total-segments', '1',
+            args = [
+                'dynamodb-dumper',
+                table_name,
+                '--host', self.DDB_LOCAL_HOST,
+                '--region', self.DDB_LOCAL_REGION,
+                '--total-segments', '1',
             ]
             with patch.object(sys, 'argv', args):
-                cli.dump() 
+                cli.dump()
 
             # Check a .dump file was created
             dump_name = [name for name in os.listdir(THIS_DIR)
@@ -83,15 +84,16 @@ class DynamoDBDumperTests(DynamoDBLocalTestCase):
 
             # Run dynamodb-dumper
             os.chdir(THIS_DIR)
-            args = ['dynamodb-dumper',
-                    table_name,
-                    '--host', self.DDB_LOCAL_HOST,
-                    '--region', self.DDB_LOCAL_REGION,
-                    '--total-segments', '1',
-                    '--hash-keys', 'CAFEBABE',
+            args = [
+                'dynamodb-dumper',
+                table_name,
+                '--host', self.DDB_LOCAL_HOST,
+                '--region', self.DDB_LOCAL_REGION,
+                '--total-segments', '1',
+                '--hash-keys', 'CAFEBABE',
             ]
             with patch.object(sys, 'argv', args):
-                cli.dump() 
+                cli.dump()
 
             # Check a .dump file was created
             dump_name = [name for name in os.listdir(THIS_DIR)

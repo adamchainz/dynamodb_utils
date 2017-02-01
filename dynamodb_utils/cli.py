@@ -4,6 +4,7 @@ import multiprocessing
 from botocore.session import get_session
 from . import dumper, loader
 
+
 def dump():
     parser = argparse.ArgumentParser(
         prog="dynamodb-dumper",
@@ -35,7 +36,10 @@ def dump():
         type=str,
         nargs='+',
         default=[],
-        help="The list of hash keys to dump data for (defaults to all - by setting this, 'Query' will be used as opposed to 'Scan' with parallel segments - thus --total-segments will be overridden)."
+        help="""
+            The list of hash keys to dump data for (defaults to all - by setting this, 'Query' will be used
+            as opposed to 'Scan' with parallel segments - thus --total-segments will be overridden).
+        """
     )
     parser.add_argument(
         '-p',
@@ -63,6 +67,7 @@ def dump():
     )
     kwargs = vars(parser.parse_args())
     dumper.dump_table(**kwargs)
+
 
 def load():
     parser = argparse.ArgumentParser(

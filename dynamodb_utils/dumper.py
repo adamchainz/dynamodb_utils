@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import argparse
 import gzip
 import json
 import multiprocessing
@@ -11,14 +10,17 @@ import sys
 from time import sleep
 
 from pynamodb.connection import Connection
-from pynamodb.constants import (ITEMS, LAST_EVALUATED_KEY,
-                                PROVISIONED_THROUGHPUT, READ_CAPACITY_UNITS,
-                                TOTAL)
+from pynamodb.constants import PROVISIONED_THROUGHPUT, READ_CAPACITY_UNITS
+
 from .batch import BatchDumper
 
-config = dict();
+config = dict()
 
-def dump_table(host, region, table_name, total_segments=1, hash_keys=[], compress=False, parallelism=1, capacity_consumption=0.5):
+
+def dump_table(host, region, table_name, total_segments=1, hash_keys=None,
+               compress=False, parallelism=1, capacity_consumption=0.5):
+    if hash_keys is None:
+        hash_keys = []
     capacity_consumption = max(0.01, capacity_consumption)
     capacity_consumption = min(1.0, capacity_consumption)
 
