@@ -1,0 +1,8 @@
+docutils
+flake8
+mock
+multilint
+nose
+pygments
+Pygments
+pynamodb
