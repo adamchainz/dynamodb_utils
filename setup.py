@@ -10,7 +10,7 @@ setup(
     url='https://github.com/adamchainz/dynamodb_utils',
     description='A toolchain for AWS DynamoDB to make common operations (backup, restore backups) easier.',
     long_description=open('README.rst').read(),
-    license='GPLv3',
+    license='MIT license',
     install_requires=[
         'pynamodb',
     ],
@@ -21,4 +21,7 @@ setup(
            'dynamodb-loader = dynamodb_utils.cli:load'
         ]
     },
+    classifiers=[
+        'License :: OSI Approved :: ISC License (ISCL)',
+    ]
 )
