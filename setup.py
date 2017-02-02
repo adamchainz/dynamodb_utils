@@ -12,7 +12,7 @@ setup(
     long_description=open('README.rst').read(),
     license='GPLv3',
     install_requires=[
-        'pynamodb'
+        'pynamodb',
     ],
     keywords='python dynamodb amazon aws',
     entry_points={

@@ -1,6 +1,7 @@
 from __future__ import print_function
-from unittest import TestCase
+
 import random
+from unittest import TestCase
 
 from botocore.vendored.requests import ConnectionError
 from pynamodb.connection import Connection

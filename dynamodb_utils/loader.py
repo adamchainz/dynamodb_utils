@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-from __future__ import absolute_import
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 
 import gzip
 import json
@@ -11,6 +10,7 @@ import sys
 from time import sleep
 
 from pynamodb.connection import Connection
+
 from .batch import BatchPutManager
 
 config = dict()

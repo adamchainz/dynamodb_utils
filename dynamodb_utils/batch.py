@@ -1,5 +1,4 @@
-from pynamodb.constants import (ITEMS, TOTAL, UNPROCESSED_KEYS, LAST_EVALUATED_KEY,
-                                PUT_REQUEST, BATCH_WRITE_PAGE_LIMIT)
+from pynamodb.constants import BATCH_WRITE_PAGE_LIMIT, ITEMS, LAST_EVALUATED_KEY, PUT_REQUEST, TOTAL, UNPROCESSED_KEYS
 from pynamodb.throttle import Throttle
 
 

@@ -1,9 +1,11 @@
-import sys
 import os
+import sys
+
+from mock import patch
+
+from dynamodb_utils import cli
 
 from .base import DynamoDBLocalTestCase
-from dynamodb_utils import cli
-from mock import patch
 
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
